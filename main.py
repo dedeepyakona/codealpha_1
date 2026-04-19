@@ -1,13 +1,16 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, request, redirect
 import mysql.connector
+import os
 
 app = Flask(__name__)
 
+# Database connection using Railway environment variables
 conn = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="KonaDedeepy@16",
-    database="codeaplha_db"
+    host=os.environ.get("MYSQLHOST"),
+    user=os.environ.get("MYSQLUSER"),
+    password=os.environ.get("MYSQLPASSWORD"),
+    database=os.environ.get("MYSQLDATABASE"),
+    port=int(os.environ.get("MYSQLPORT"))
 )
 
 cursor = conn.cursor()
@@ -23,8 +26,10 @@ def add():
         email = request.form["email"]
         phone = request.form["phone"]
 
-        cursor.execute("INSERT INTO details (name, email, phone) VALUES (%s, %s, %s)",
-                       (name, email, phone))
+        cursor.execute(
+            "INSERT INTO details (name, email, phone) VALUES (%s, %s, %s)",
+            (name, email, phone)
+        )
         conn.commit()
 
         return redirect("/view")
@@ -45,5 +50,5 @@ def view():
     return "<br>".join([str(row) for row in data])
 
 if __name__ == "__main__":
-    app.run(debug=True)
-    
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
